@@ -1,0 +1,21 @@
+var electronOptions = {
+  buildDir: "./build",
+  platforms: <%- JSON.stringify(platforms) %>,
+  archs: <%- JSON.stringify(archs) %>,
+  glob: [
+    "package.json",
+    "production.html",
+    "node_modules/steal/steal.production.js"
+  ]
+};
+
+var stealElectron = require("steal-electron");
+
+// Check if the electron option is passed.
+var buildElectron = process.argv.indexOf("electron") > 0;
+
+if(buildElectron) {
+  buildPromise = buildPromise.then(function(buildResult){
+    stealElectron(electronOptions, buildResult);
+  });
+}

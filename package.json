@@ -8,6 +8,11 @@
     "email": "contact@bitovi.com",
     "url": "http://bitovi.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:donejs/donejs-electron.git",
+    "github": "https://github.com/donejs/donejs-electron"
+  },
   "license": "MIT",
   "main": "lib/",
   "scripts": {
@@ -25,7 +30,9 @@
     "generator"
   ],
   "dependencies": {
+    "ejs": "^2.5.2",
     "lodash": "^4.16.4",
+    "q": "^1.4.1",
     "yeoman-generator": "^0.20.3"
   },
   "devDependencies": {

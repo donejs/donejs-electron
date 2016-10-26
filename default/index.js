@@ -1,9 +1,23 @@
 var generator = require('yeoman-generator');
+var os = require('os');
+var Q = require('q');
+var fs = require('fs');
+var ejs = require('ejs');
+var platform = {
+  macos: os.platform() === 'darwin',
+  linux: os.platform() === 'linux',
+  windows: os.platform() === 'win32'
+};
+var arch = {
+  '32': os.arch() === 'ia32' || 'x32' || 'x86',
+  '64': os.arch() === 'x64'
+}
 
 module.exports = generator.Base.extend({
   initializing: function () {
     this.pkg = this.fs.readJSON(this.destinationPath('package.json'), {});
-    
+
+    //TODO: track the proper files here. Is initializing section even neccesary?
     this.files = [
       'file.js'
     ];
@@ -12,22 +26,117 @@ module.exports = generator.Base.extend({
   prompting: function () {
     var done = this.async();
 
-    this.prompt([{
+    this.prompt([
+    {
       type    : 'input',
-      name    : 'name',
-      message : 'What is the name of the file?'
+      name    : 'main',
+      message : 'Main HTML file for your app',
+      default : 'production.html'
+    },
+    {
+      type: 'checkbox',
+      name: 'platforms',
+      message: 'What platforms would you like to support?',
+      choices: [{
+        name: 'MacOS',
+        checked: platform.macos
+      },
+      {
+        name: 'Windows',
+        checked: platform.windows
+      },
+      {
+        name: 'Linux',
+        checked: platform.linux
+      }]
+    },
+    {
+      type: 'checkbox',
+      name: 'archs',
+      message: 'What architectures would you like to support?',
+      choices: [{
+        name: 'ia32',
+        checked: arch['32']
+      },
+      {
+        name: 'x64',
+        checked: arch['64']
+      }]
     }], function (answers) {
-      this.props = answers;
+      this.config.set('main', answers.main);
+      this.config.set('platforms', answers.platforms);
+      this.config.set('archs', answers.archs);
       done();
     }.bind(this));
   },
+  // installingStealElectron: function() {
+  //   this.npmInstall(['steal-electron'], { 'saveDev': true });
+  // },
   writing: function () {
-    this.log('Copying file to ' + this.destinationPath(this.props.name + '.js'));
-    
-    this.fs.copyTpl(
-			this.templatePath('file.js'),
-			this.destinationPath(this.props.name + '.js'),
-			this.props
-		);
+    var done = this.async();
+    var buildJsDeferred = Q.defer();
+    var packageJsonDeferred = Q.defer();
+    var options = {
+      platforms: this.config.get('platforms'),
+      archs: this.config.get('archs')
+    };
+
+    // update build.js
+    var buildJs = this.destinationPath('build.js');
+    if (!this.fs.exists(buildJs)) {
+      this.fs.copyTpl(
+        this.templatePath('build.ejs'),
+        buildJs,
+        options
+      );
+      buildJsDeferred.resolve();
+    } else {
+      fs.readFile(buildJs, 'utf8', function(err, data) {
+        var commentStartText = this.fs.read(this.templatePath('commentStart.ejs'), 'utf8'),
+            commentEndText = this.fs.read(this.templatePath('commentEnd.ejs'), 'utf8'),
+            electronOptionsText = this.fs.read(this.templatePath('electronOptions.ejs'), 'utf8'),
+            commentStartIndex = data.indexOf(commentStartText),
+            commentEndIndex = data.indexOf(commentEndText),
+            newContent;
+
+        if (commentStartIndex < 0 && commentEndIndex < 0) {
+            // add electronOptions
+            newContent = data +
+                ejs.render(commentStartText, options) +
+                ejs.render(electronOptionsText, options) +
+                ejs.render(commentEndText, options);
+        } else {
+            // replace existing electronOptions
+            newContent = data.substring(data, commentStartIndex) +
+                ejs.render(commentStartText, options) +
+                ejs.render(electronOptionsText, options) +
+                ejs.render(commentEndText, options) +
+                data.substring(commentEndIndex + commentEndText.length);
+        }
+
+        fs.writeFile(buildJs, newContent, function() {
+          buildJsDeferred.resolve();
+        });
+      }.bind(this));
+    }
+
+    // update package.json
+    var packageJson = this.destinationPath('package.json');
+    fs.readFile(packageJson, 'utf8', function(err, data) {
+      var json = data && JSON.parse(data) || {};
+      json.main = this.config.get('main');
+      fs.writeFile(packageJson, JSON.stringify(json), function() {
+        packageJsonDeferred.resolve();
+      });
+    }.bind(this));
+
+    // complete writing once build.js and package.json are updated
+    Q.all([
+      buildJsDeferred.promise,
+      packageJsonDeferred.promise
+    ])
+    .then(function() {
+      done();
+    });
   }
 });

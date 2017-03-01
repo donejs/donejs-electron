@@ -1,4 +1,4 @@
-var generator = require('yeoman-generator');
+var Generator = require('yeoman-generator');
 var os = require('os');
 var Q = require('q');
 var fs = require('fs');
@@ -11,61 +11,52 @@ var platform = {
 var arch = {
   '32': os.arch() === 'ia32' || 'x32' || 'x86',
   '64': os.arch() === 'x64'
-}
+};
 
-module.exports = generator.Base.extend({
-  initializing: function () {
-    this.pkg = this.fs.readJSON(this.destinationPath('package.json'), {});
-
-    //TODO: track the proper files here. Is initializing section even neccesary?
-    this.files = [
-      'file.js'
-    ];
-  },
-
+module.exports = Generator.extend({
   prompting: function () {
     var done = this.async();
 
-    this.prompt([
-    {
+    this.prompt([{
       type    : 'input',
       name    : 'main',
       message : 'Main HTML file for your app',
-      default : 'production.html'
-    },
-    {
+      default : 'electron-main.js'
+    }, {
+      type    : 'input',
+      name    : 'baseURL',
+      message : 'The URL of the service layer',
+      default : undefined
+    }, {
       type: 'checkbox',
       name: 'platforms',
       message: 'What platforms would you like to support?',
       choices: [{
         name: 'MacOS',
         checked: platform.macos
-      },
-      {
+      }, {
         name: 'Windows',
         checked: platform.windows
-      },
-      {
+      }, {
         name: 'Linux',
         checked: platform.linux
       }]
-    },
-    {
+    }, {
       type: 'checkbox',
       name: 'archs',
       message: 'What architectures would you like to support?',
       choices: [{
         name: 'ia32',
         checked: arch['32']
-      },
-      {
+      }, {
         name: 'x64',
         checked: arch['64']
       }]
-    }], function (answers) {
+    }]).then(function (answers) {
       this.config.set('main', answers.main);
       this.config.set('platforms', answers.platforms);
       this.config.set('archs', answers.archs);
+      this.config.set('baseURL', answers.baseURL);
       done();
     }.bind(this));
   },
@@ -125,6 +116,17 @@ module.exports = generator.Base.extend({
     fs.readFile(packageJson, 'utf8', function(err, data) {
       var json = data && JSON.parse(data) || {};
       json.main = this.config.get('main');
+
+      if(this.config.get('baseURL')) {
+        json.steal = json.steal || {};
+        json.steal.envs = json.steal.envs || {};
+        var electronEnv = json.steal.envs['electron-production'];
+        if(!electronEnv) {
+          electronEnv = json.steal.envs['electron-production'] = {};
+        }
+        electronEnv.serviceBaseURL = this.config.get('baseURL');
+      }
+
       fs.writeFile(packageJson, JSON.stringify(json), function() {
         packageJsonDeferred.resolve();
       });

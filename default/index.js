@@ -33,9 +33,10 @@ var getSupportedArch = function(platform) {
   return archMap[platform];
 };
 
+var osArch = os.arch();
 var arch = {
-  '32': os.arch() === 'ia32' || 'x32' || 'x86',
-  '64': os.arch() === 'x64'
+  '32': osArch === 'ia32' || osArch === 'x32' || osArch === 'x86',
+  '64': osArch === 'x64'
 };
 
 module.exports = Generator.extend({

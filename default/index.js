@@ -3,11 +3,36 @@ var os = require('os');
 var Q = require('q');
 var fs = require('fs');
 var ejs = require('ejs');
+
 var platform = {
   macos: os.platform() === 'darwin',
   linux: os.platform() === 'linux',
   windows: os.platform() === 'win32'
 };
+
+// convert friendly platform names to names supported
+// by steal-electron (linux, win32, darwin, mas, all)
+var getSupportedPlatform = function(platform) {
+  var platformMap = {
+    MacOS: 'darwin',
+    Windows: 'win32',
+    Linux: 'linux'
+  };
+
+  return platformMap[platform];
+};
+
+// convert friendly arch names to names supported
+// by steal-electron (ia32, x64, armv7l, all)
+var getSupportedArch = function(platform) {
+  var archMap = {
+    '32-bit (x86)': 'ia32',
+    '64-bit (x64)': 'x64'
+  };
+
+  return archMap[platform];
+};
+
 var arch = {
   '32': os.arch() === 'ia32' || 'x32' || 'x86',
   '64': os.arch() === 'x64'
@@ -29,7 +54,7 @@ module.exports = Generator.extend({
       default : undefined
     }, {
       type: 'checkbox',
-      name: 'platforms',
+      name: 'friendlyPlatforms',
       message: 'What platforms would you like to support?',
       choices: [{
         name: 'MacOS',
@@ -43,26 +68,31 @@ module.exports = Generator.extend({
       }]
     }, {
       type: 'checkbox',
-      name: 'archs',
+      name: 'friendlyArchs',
       message: 'What architectures would you like to support?',
       choices: [{
-        name: 'ia32',
+        name: '32-bit (x86)',
         checked: arch['32']
       }, {
-        name: 'x64',
+        name: '64-bit (x64)',
         checked: arch['64']
       }]
     }]).then(function (answers) {
+      var platforms = answers.friendlyPlatforms.map(getSupportedPlatform);
+      var archs = answers.friendlyArchs.map(getSupportedArch);
+
       this.config.set('main', answers.main);
-      this.config.set('platforms', answers.platforms);
-      this.config.set('archs', answers.archs);
+      this.config.set('platforms', platforms);
+      this.config.set('archs', archs);
       this.config.set('baseURL', answers.baseURL);
       done();
     }.bind(this));
   },
+
   // installingStealElectron: function() {
   //   this.npmInstall(['steal-electron'], { 'saveDev': true });
   // },
+
   writing: function () {
     var done = this.async();
     var buildJsDeferred = Q.defer();

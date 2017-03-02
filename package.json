@@ -1,6 +1,6 @@
 {
   "name": "donejs-electron",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A plugin to add support for Electron to your DoneJS application",
   "homepage": "https://github.com/donejs/donejs-electron",
   "author": {

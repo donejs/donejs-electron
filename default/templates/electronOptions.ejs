@@ -16,6 +16,8 @@ var buildElectron = process.argv.indexOf("electron") > 0;
 
 if(buildElectron) {
   buildPromise = buildPromise.then(function(buildResult){
-    stealElectron(electronOptions, buildResult);
+    return stealElectron(electronOptions, buildResult);
+  }).catch(function(err) {
+    console.log(err);
   });
 }

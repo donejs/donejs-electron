@@ -89,9 +89,9 @@ module.exports = Generator.extend({
     }.bind(this));
   },
 
-  // installingStealElectron: function() {
-  //   this.npmInstall(['steal-electron'], { 'saveDev': true });
-  // },
+   installingStealElectron: function() {
+     this.npmInstall(['steal-electron'], { 'saveDev': true });
+   },
 
   writing: function () {
     var done = this.async();

@@ -19,6 +19,7 @@ describe('donejs-electron', function() {
         assert.file(['build.js']);
         assert.fileContent('build.js', /steal-tools/);
         assert.fileContent('build.js', /steal-electron/);
+        assert.fileContent('build.js', /main: "electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["darwin"\]/);
         assert.fileContent('build.js', /archs: \["ia32"\]/);
       });
@@ -28,6 +29,7 @@ describe('donejs-electron', function() {
       before(function(done) {
         helpers.run(path.join(__dirname, '..', 'default'))
         .withPrompts({
+          main: 'my-electron-main.js',
           friendlyPlatforms: ['Windows'],
           friendlyArchs: ['64-bit (x64)']
         })
@@ -43,6 +45,7 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /generator-donejs build\.js/);
         assert.fileContent('build.js', /steal-tools/);
         assert.fileContent('build.js', /steal-electron/);
+        assert.fileContent('build.js', /main: "my-electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["win32"\]/);
         assert.fileContent('build.js', /archs: \["x64"\]/);
       });
@@ -67,6 +70,7 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /generator-donejs \+ donejs-electron build\.js/);
         assert.fileContent('build.js', /steal-tools/);
         assert.fileContent('build.js', /steal-electron/);
+        assert.fileContent('build.js', /main: "electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["darwin","linux"\]/);
         assert.fileContent('build.js', /archs: \["ia32","x64"\]/);
         assert.noFileContent('build.js', /previous electron options/);

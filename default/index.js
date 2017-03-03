@@ -103,6 +103,7 @@ module.exports = Generator.extend({
     var buildJsDeferred = Q.defer();
     var packageJsonDeferred = Q.defer();
     var options = {
+      main: this.config.get('main'),
       platforms: this.config.get('platforms'),
       archs: this.config.get('archs')
     };

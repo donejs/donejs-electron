@@ -1,5 +1,7 @@
 # donejs-electron
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/donejs/donejs-electron.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/donejs/donejs-electron.svg?branch=master)](https://travis-ci.org/donejs/donejs-electron)
 [![npm version](https://badge.fury.io/js/donejs-electron.svg)](http://badge.fury.io/js/donejs-electron)
 

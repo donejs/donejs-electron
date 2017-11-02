@@ -1,6 +1,6 @@
 var path = require('path');
 var helpers = require('yeoman-test');
-var assert = require('assert');
+var assert = require('yeoman-assert');
 var fs = require('fs-extra');
 
 describe('donejs-electron', function() {

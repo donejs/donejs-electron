@@ -101,7 +101,6 @@ module.exports = Generator.extend({
   writing: function () {
     var done = this.async();
     var buildJsDeferred = Q.defer();
-    var packageJsonDeferred = Q.defer();
     var options = {
       main: this.config.get('main'),
       platforms: this.config.get('platforms'),
@@ -149,31 +148,24 @@ module.exports = Generator.extend({
 
     // update package.json
     var packageJson = this.destinationPath('package.json');
-    fs.readFile(packageJson, 'utf8', function(err, data) {
-      var json = data && JSON.parse(data) || {};
-      json.main = this.config.get('main');
+    var json = this.fs.readJSON(packageJson, {});
 
-      if(this.config.get('baseURL')) {
-        json.steal = json.steal || {};
-        json.steal.envs = json.steal.envs || {};
-        var electronEnv = json.steal.envs['electron-production'];
-        if(!electronEnv) {
-          electronEnv = json.steal.envs['electron-production'] = {};
-        }
-        electronEnv.serviceBaseURL = this.config.get('baseURL');
+    json.main = this.config.get('main');
+
+    if(this.config.get('baseURL')) {
+      json.steal = json.steal || {};
+      json.steal.envs = json.steal.envs || {};
+      var electronEnv = json.steal.envs['electron-production'];
+      if(!electronEnv) {
+        electronEnv = json.steal.envs['electron-production'] = {};
       }
+      electronEnv.serviceBaseURL = this.config.get('baseURL');
+    }
 
-      fs.writeFile(packageJson, JSON.stringify(json), function() {
-        packageJsonDeferred.resolve();
-      });
-    }.bind(this));
+    this.fs.writeJSON(packageJson, json);
 
     // complete writing once build.js and package.json are updated
-    Q.all([
-      buildJsDeferred.promise,
-      packageJsonDeferred.promise
-    ])
-    .then(function() {
+    buildJsDeferred.promise.then(function() {
       done();
     });
   }

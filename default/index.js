@@ -40,6 +40,12 @@ var arch = {
 };
 
 module.exports = Generator.extend({
+  constructor: function(args, opts){
+    Generator.call(this, args, opts);
+
+    this.pkgPath = this.destinationPath('package.json');
+  },
+
   prompting: function () {
     var done = this.async();
 
@@ -107,6 +113,9 @@ module.exports = Generator.extend({
       archs: this.config.get('archs')
     };
 
+    // force writing to package.json so the user isn’t prompted
+    this.conflicter.force = true;
+
     // update build.js
     var buildJs = this.destinationPath('build.js');
     if (!this.fs.exists(buildJs)) {
@@ -149,20 +158,19 @@ module.exports = Generator.extend({
     // update package.json
     var packageJson = this.destinationPath('package.json');
     var json = this.fs.readJSON(packageJson, {});
+    var newPkgConfig = {
+      main: this.config.get("main")
+    };
 
-    json.main = this.config.get('main');
-
-    if(this.config.get('baseURL')) {
-      json.steal = json.steal || {};
-      json.steal.envs = json.steal.envs || {};
-      var electronEnv = json.steal.envs['electron-production'];
-      if(!electronEnv) {
-        electronEnv = json.steal.envs['electron-production'] = {};
-      }
-      electronEnv.serviceBaseURL = this.config.get('baseURL');
+    if(this.config.get("baseURL")) {
+      newPkgConfig.steal = json.steal || {};
+      newPkgConfig.steal.envs = newPkgConfig.steal.envs || {};
+      newPkgConfig.steal.envs["electron-production"] = {
+        serviceBaseURL: this.config.get("baseURL")
+      };
     }
 
-    this.fs.writeJSON(packageJson, json);
+    this.fs.extendJSON(this.pkgPath, newPkgConfig);
 
     // complete writing once build.js and package.json are updated
     buildJsDeferred.promise.then(function() {

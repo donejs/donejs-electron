@@ -30,7 +30,7 @@
     "generator"
   ],
   "dependencies": {
-    "donejs-generator-common": "^1.0.1",
+    "donejs-generator-common": "^1.0.5",
     "ejs": "^2.5.2",
     "lodash": "^4.16.4",
     "q": "^1.4.1",

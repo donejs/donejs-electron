@@ -12,9 +12,6 @@ var electronOptions = {
 
 var stealElectron = require("steal-electron");
 
-// Check if the electron option is passed.
-var buildElectron = process.argv.indexOf("electron") > 0;
-
 if(buildElectron) {
   buildPromise = buildPromise.then(function(buildResult){
     return stealElectron(electronOptions, buildResult);

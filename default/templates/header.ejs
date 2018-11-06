@@ -1,7 +1,12 @@
 var stealTools = require("steal-tools");
 
+var buildElectron = process.argv.indexOf("electron") > 0;
+var buildCordova = process.argv.indexOf("cordova") > 0;
+
 var buildPromise = stealTools.build({
-  config: __dirname + "/package.json!npm"
+  map: ((buildElectron || buildCordova) ? {
+    "can-route-pushstate": "can-route-hash"
+  } : {})
 }, {
   bundleAssets: true
 });

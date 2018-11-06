@@ -3,6 +3,11 @@ var helpers = require('yeoman-test');
 var assert = require('yeoman-assert');
 var fs = require('fs-extra');
 
+function readFile(filename, json) {
+  var file = fs.readFileSync(filename, 'utf8');
+  return json ? JSON.parse(file) : file;
+}
+
 describe('donejs-electron', function() {
   describe('should create/update build.js', function() {
     describe('when no build.js exists', function() {
@@ -22,6 +27,8 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /main: "electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["darwin"\]/);
         assert.fileContent('build.js', /archs: \["ia32"\]/);
+        assert.fileContent('build.js', /buildElectron/);
+        assert.fileContent('build.js', /map: \(/);
       });
     });
 
@@ -48,6 +55,9 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /main: "my-electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["win32"\]/);
         assert.fileContent('build.js', /archs: \["x64"\]/);
+        assert.fileContent('build.js', /var buildElectron/);
+        assert.fileContent('build.js', /var buildCordova/);
+        assert.fileContent('build.js', /map: \(/);
       });
     });
 
@@ -74,6 +84,38 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /platforms: \["darwin","linux"\]/);
         assert.fileContent('build.js', /archs: \["ia32","x64"\]/);
         assert.noFileContent('build.js', /previous electron options/);
+        assert.fileContent('build.js', /var buildElectron/);
+        assert.fileContent('build.js', /var buildCordova/);
+        assert.fileContent('build.js', /map: \(/);
+      });
+    });
+
+    describe('when build.js already contains the route mapping', function() {
+      before(function(done) {
+        helpers.run(path.join(__dirname, '..', 'default'))
+          .withPrompts({
+            friendlyPlatforms: ['MacOS', 'Linux'],
+            friendlyArchs: ['32-bit (x86)', '64-bit (x64)']
+          })
+          .inTmpDir(function(dir) {
+            var done = this.async();
+            fs.copy(path.join(__dirname, 'templates/donejs-electron-with-map'), dir, done);
+          })
+          .on('end', done);
+      });
+
+      it('should include the map only once', function() {
+        assert.file(['build.js']);
+
+        var file = readFile('build.js');
+        var exp = /map: \(/g;
+        var mappings = 0;
+
+        while(exp.exec(file)) {
+          mappings++;
+        }
+
+        assert.equal(mappings, 1, "There is only one mapping");
       });
     });
   });

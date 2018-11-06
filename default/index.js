@@ -3,6 +3,7 @@ var os = require('os');
 var Q = require('q');
 var fs = require('fs');
 var ejs = require('ejs');
+var addRoutingMap = require('donejs-generator-common/routing').addRoutingMap;
 
 var platform = {
   macos: os.platform() === 'darwin',
@@ -148,6 +149,8 @@ module.exports = Generator.extend({
                 ejs.render(commentEndText, options) +
                 data.substring(commentEndIndex + commentEndText.length);
         }
+
+        newContent = addRoutingMap(newContent, data);
 
         fs.writeFile(buildJs, newContent, function() {
           buildJsDeferred.resolve();

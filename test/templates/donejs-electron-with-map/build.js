@@ -1,9 +1,13 @@
 var buildElectron = process.argv.indexOf("electron") > 0;
+var buildCordova = process.argv.indexOf("cordova") > 0;
 
 // generator-donejs + donejs-electron build.js
 var stealTools = require("steal-tools");
 
 var buildPromise = stealTools.build({
+  map: ((buildElectron || buildCordova) ? {
+    "can-route-pushstate": "can-route-hash"
+  } : {}),
   config: __dirname + "/package.json!npm"
 }, {
   bundleAssets: true

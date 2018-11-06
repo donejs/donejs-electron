@@ -22,6 +22,8 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /main: "electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["darwin"\]/);
         assert.fileContent('build.js', /archs: \["ia32"\]/);
+        assert.fileContent('build.js', /buildElectron/);
+        assert.fileContent('build.js', /map ?/);
       });
     });
 
@@ -48,6 +50,9 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /main: "my-electron-main.js"/);
         assert.fileContent('build.js', /platforms: \["win32"\]/);
         assert.fileContent('build.js', /archs: \["x64"\]/);
+        assert.fileContent('build.js', /var buildElectron/);
+        assert.fileContent('build.js', /var buildCordova/);
+        assert.fileContent('build.js', /map ?/);
       });
     });
 
@@ -74,6 +79,9 @@ describe('donejs-electron', function() {
         assert.fileContent('build.js', /platforms: \["darwin","linux"\]/);
         assert.fileContent('build.js', /archs: \["ia32","x64"\]/);
         assert.noFileContent('build.js', /previous electron options/);
+        assert.fileContent('build.js', /var buildElectron/);
+        assert.fileContent('build.js', /var buildCordova/);
+        assert.fileContent('build.js', /map ?/);
       });
     });
   });

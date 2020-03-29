@@ -31,7 +31,7 @@
   ],
   "dependencies": {
     "donejs-generator-common": "^1.0.5",
-    "ejs": "^2.5.2",
+    "ejs": "^3.0.2",
     "lodash": "^4.16.4",
     "q": "^1.4.1",
     "yeoman-generator": "^1.1.0"
